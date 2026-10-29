@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Leftovers">
+  <title>Leftovers</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <main class="narrow">
+
+    <!-- Fridge list -->
+    <section id="view-list">
+      <header class="row">
+        <h1>In the fridge</h1>
+        <a href="#" data-go="print" class="link">Labels</a>
+      </header>
+      <ul id="items" class="items"></ul>
+      <p id="empty" class="muted" hidden>Nothing in the fridge. Scan a label to add something.</p>
+      <button class="primary big sticky" data-go="scan">Scan label</button>
+    </section>
+
+    <!-- Scanner -->
+    <section id="view-scan" hidden>
+      <header class="row"><h1>Scan</h1><a href="#" data-go="list" class="link">Cancel</a></header>
+      <div id="reader"></div>
+      <form id="manual" class="card row">
+        <input id="manual-code" placeholder="or type code, e.g. LO-0001" autocapitalize="characters">
+        <button type="submit">Go</button>
+      </form>
+    </section>
+
+    <!-- Add item -->
+    <section id="view-add" hidden>
+      <header class="row"><h1>New leftovers</h1><a href="#" data-go="list" class="link">Cancel</a></header>
+      <form id="add-form" class="card">
+        <p class="muted">Label <strong class="code"></strong></p>
+        <label for="name">What is it?</label>
+        <div class="row">
+          <input id="name" autocomplete="off" placeholder="e.g. Chicken curry">
+          <button type="button" id="mic" class="mic" aria-label="Speak name">🎤</button>
+        </div>
+        <p id="mic-status" class="muted small"></p>
+        <button type="submit" class="primary big">Save</button>
+      </form>
+    </section>
+
+    <!-- Item detail -->
+    <section id="view-detail" hidden>
+      <header class="row"><h1 id="detail-name"></h1><a href="#" data-go="list" class="link">Back</a></header>
+      <div class="card">
+        <p class="muted">Label <strong class="code"></strong></p>
+        <p id="detail-when"></p>
+        <div class="row">
+          <button class="primary big" data-outcome="eaten">Eaten</button>
+          <button class="danger big" data-outcome="tossed">Tossed</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Print labels -->
+    <section id="view-print" hidden>
+      <header class="row"><h1>Print labels</h1><a href="#" data-go="list" class="link">Back</a></header>
+      <form method="post" action="/labels/print" class="card" target="_blank">
+        <label for="count">How many new labels?</label>
+        <input id="count" name="count" type="number" min="1" max="300" value="30">
+        <label for="reprint">…or reprint existing codes (optional)</label>
+        <input id="reprint" name="reprint" placeholder="LO-0003, LO-0007">
+        <fieldset>
+          <legend>Printer</legend>
+          <label><input type="radio" name="format" value="sheet" checked> Avery 5160 sheet (30 per page)</label>
+          <label><input type="radio" name="format" value="roll"> Label printer (62 × 29 mm, one per page)</label>
+        </fieldset>
+        <button type="submit" class="primary">Download PDF</button>
+      </form>
+      <p><a href="/logout" class="link">Log out</a></p>
+    </section>
+
+    <div id="toast" class="toast" hidden></div>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

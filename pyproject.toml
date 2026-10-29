@@ -1,0 +1,15 @@
+[project]
+name = "leftovers-tracker"
+version = "0.1.0"
+description = "Track fridge leftovers with QR labels"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.0.3",
+    "qrcode[pil]>=7.4.2",
+    "reportlab>=4.2.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.3",
+]

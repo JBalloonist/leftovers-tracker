@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leftovers – Log in</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="narrow">
+    <h1>Leftovers</h1>
+    <form method="post" class="card">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" autofocus>
+      {% if error %}<p class="error">{{ error }}</p>{% endif %}
+      <button type="submit" class="primary">Log in</button>
+    </form>
+  </main>
+</body>
+</html>
