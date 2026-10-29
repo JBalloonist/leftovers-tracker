@@ -42,6 +42,8 @@ The phone camera and mic need HTTPS, so test scanning on the deployed site.
    os.environ["SESSION_COOKIE_SECURE"] = "1"
    from app import app as application
    ```
+   The app won't start if `SECRET_KEY` or `APP_PASSWORD` is missing. If the site shows an
+   error after reloading, check the error log on the Web tab.
 5. Click **Reload** on the Web tab. The SQLite database (`leftovers.db`) is created next to the code.
 
 ## Using it on your iPhone

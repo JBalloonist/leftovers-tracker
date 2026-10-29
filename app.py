@@ -12,10 +12,23 @@ import labels
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Dev defaults apply only when run directly (`uv run app.py`) or under tests (LEFTOVERS_DEV=1).
+DEV = __name__ == "__main__" or os.environ.get("LEFTOVERS_DEV") == "1"
+
+
+def required_setting(name, dev_default):
+    value = os.environ.get(name)
+    if value:
+        return value
+    if DEV:
+        return dev_default
+    raise RuntimeError(f"{name} environment variable must be set (see README: Deploy to PythonAnywhere)")
+
+
 app = Flask(__name__)
 app.config.update(
-    SECRET_KEY=os.environ.get("SECRET_KEY", "dev-only-change-me"),
-    APP_PASSWORD=os.environ.get("APP_PASSWORD", "leftovers"),
+    SECRET_KEY=required_setting("SECRET_KEY", "dev-only-change-me"),
+    APP_PASSWORD=required_setting("APP_PASSWORD", "leftovers"),
     DB_PATH=os.environ.get("DB_PATH", os.path.join(BASE_DIR, "leftovers.db")),
     PERMANENT_SESSION_LIFETIME=timedelta(days=365),
     SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "0") == "1",
