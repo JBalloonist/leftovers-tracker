@@ -49,7 +49,7 @@ The phone camera and mic need HTTPS, so test scanning on the deployed site.
 ## Using it on your iPhone
 
 - Open the site in Safari, log in, then tap Share and choose **Add to Home Screen**.
-- **Print labels:** on the Labels screen, choose *Avery 5160 sheet* or *Label printer (62 × 29 mm)*.
+- **Print labels:** on the Labels screen, choose *Avery 8460 sheet* or *Label printer (62 × 29 mm)*.
   To change the label printer size, edit `ROLL_SIZE` in `labels.py` (for example, Dymo 30252 is 89 × 28 mm).
 - **Scan:** use the app's **Scan label** button, or point the iPhone **Camera app** at a label. Each QR
   code holds a link (`/l/LO-0001`), so the Camera app opens the right screen directly.

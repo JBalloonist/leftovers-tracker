@@ -11,7 +11,7 @@ Single-user Flask + SQLite app for tracking fridge leftovers with QR-code labels
 PythonAnywhere (see README.md).
 
 - `app.py`: routes, API, and database schema
-- `labels.py`: label PDFs (Avery 5160 sheets and roll label printer)
+- `labels.py`: label PDFs (Avery 8460 sheets and roll label printer)
 - `templates/`, `static/`: phone web front end (vanilla JS)
 
 ## Commands

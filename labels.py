@@ -7,7 +7,7 @@ from reportlab.lib.units import inch, mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-# Avery 5160 / 8160: 30 labels per US Letter sheet, 2.625" x 1".
+# Avery 8460 (same layout as 5160): 30 labels per US Letter sheet, 2.625" x 1".
 SHEET = dict(cols=3, rows=10, width=2.625 * inch, height=1 * inch,
              left=0.1875 * inch, top=0.5 * inch, col_pitch=2.75 * inch)
 
