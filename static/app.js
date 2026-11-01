@@ -1,6 +1,7 @@
 const $ = (sel) => document.querySelector(sel);
-const views = ["list", "scan", "add", "detail", "print"];
+const views = ["list", "scan", "add", "detail", "check", "print"];
 let scanner = null;
+let scanMode = "store"; // "store" can add or remove items; "check" only shows what's in a label
 let currentCode = null;
 let currentItem = null;
 
@@ -51,7 +52,10 @@ async function show(view) {
   }
   views.forEach((v) => ($(`#view-${v}`).hidden = v !== view));
   if (view === "list") loadList();
-  if (view === "scan") startScanner();
+  if (view === "scan") {
+    $("#scan-title").textContent = scanMode === "check" ? "Check label" : "Scan";
+    startScanner();
+  }
   if (view === "add") setTimeout(() => $("#name").focus(), 50);
 }
 
@@ -72,7 +76,7 @@ async function loadList() {
   }
 }
 
-async function openLabel(raw) {
+async function openLabel(raw, mode = "store") {
   const match = String(raw).toUpperCase().match(/LO-\d{4,}/);
   if (!match) { toast("That's not a leftovers label"); return; }
   try {
@@ -82,7 +86,13 @@ async function openLabel(raw) {
     document.querySelectorAll(".code").forEach((el) => {
       if (el.closest("section")) el.textContent = code;
     });
-    if (item) {
+    if (mode === "check") {
+      $("#check-name").textContent = item ? item.name : "Empty label";
+      $("#check-when").textContent = item
+        ? `Stored ${formatWhen(item.stored_at)} (${ageText(item.stored_at)})`
+        : "Nothing is logged under this label.";
+      show("check");
+    } else if (item) {
       $("#detail-name").textContent = item.name;
       $("#detail-when").textContent = `Stored ${formatWhen(item.stored_at)} (${ageText(item.stored_at)})`;
       show("detail");
@@ -101,7 +111,7 @@ function startScanner() {
   scanner
     .start({ facingMode: "environment" }, { fps: 10, qrbox: 220 }, (text) => {
       if (navigator.vibrate) navigator.vibrate(50);
-      openLabel(text);
+      openLabel(text, scanMode);
     })
     .catch((err) => toast(`Camera unavailable: ${err}`));
 }
@@ -150,10 +160,14 @@ document.querySelectorAll("[data-outcome]").forEach((btn) => {
   };
 });
 
-$("#manual").onsubmit = (e) => { e.preventDefault(); openLabel($("#manual-code").value); };
+$("#manual").onsubmit = (e) => { e.preventDefault(); openLabel($("#manual-code").value, scanMode); };
 
 document.querySelectorAll("[data-go]").forEach((el) => {
-  el.onclick = (e) => { e.preventDefault(); show(el.dataset.go); };
+  el.onclick = (e) => {
+    e.preventDefault();
+    if (el.dataset.go === "scan") scanMode = el.dataset.mode || "store";
+    show(el.dataset.go);
+  };
 });
 
 setupMic();

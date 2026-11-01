@@ -67,13 +67,14 @@ button {
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 button.danger { background: var(--danger); border-color: var(--danger); color: #fff; font-weight: 600; }
 button.big { width: 100%; padding: 16px; margin-top: 12px; }
-button.sticky {
+.sticky {
   position: fixed;
   left: 16px; right: 16px;
   bottom: calc(16px + env(safe-area-inset-bottom));
   max-width: 488px;
   margin: 0 auto;
 }
+.sticky button.big { margin-top: 0; }
 .mic { flex: 0 0 52px; height: 48px; font-size: 22px; padding: 0; }
 .mic.listening { background: var(--danger); border-color: var(--danger); }
 

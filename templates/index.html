@@ -20,12 +20,15 @@
       </header>
       <ul id="items" class="items"></ul>
       <p id="empty" class="muted" hidden>Nothing in the fridge. Scan a label to add something.</p>
-      <button class="primary big sticky" data-go="scan">Scan label</button>
+      <div class="row sticky">
+        <button class="big" data-go="scan" data-mode="check">Check label</button>
+        <button class="primary big" data-go="scan">Scan label</button>
+      </div>
     </section>
 
     <!-- Scanner -->
     <section id="view-scan" hidden>
-      <header class="row"><h1>Scan</h1><a href="#" data-go="list" class="link">Cancel</a></header>
+      <header class="row"><h1 id="scan-title">Scan</h1><a href="#" data-go="list" class="link">Cancel</a></header>
       <div id="reader"></div>
       <form id="manual" class="card row">
         <input id="manual-code" placeholder="or type code, e.g. LO-0001" autocapitalize="characters">
@@ -58,6 +61,16 @@
           <button class="primary big" data-outcome="eaten">Eaten</button>
           <button class="danger big" data-outcome="tossed">Tossed</button>
         </div>
+      </div>
+    </section>
+
+    <!-- Check label (read-only) -->
+    <section id="view-check" hidden>
+      <header class="row"><h1 id="check-name"></h1><a href="#" data-go="list" class="link">Done</a></header>
+      <div class="card">
+        <p class="muted">Label <strong class="code"></strong></p>
+        <p id="check-when"></p>
+        <button class="big" data-go="scan" data-mode="check">Check another</button>
       </div>
     </section>
 
