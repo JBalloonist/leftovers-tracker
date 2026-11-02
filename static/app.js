@@ -26,7 +26,9 @@ function toast(msg) {
 }
 
 function ageDays(iso) {
-  return Math.floor((Date.now() - new Date(iso)) / 86400000);
+  // Calendar days in the phone's time zone; round because DST days aren't 24 hours.
+  const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.round((midnight(new Date()) - midnight(new Date(iso))) / 86400000);
 }
 
 function ageText(iso) {
