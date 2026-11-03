@@ -69,6 +69,21 @@ def test_full_lifecycle(client):
     assert client.post("/api/items", json={"label_code": "LO-0001", "name": "Soup"}).status_code == 201
 
 
+def test_history_includes_removed_items_with_outcome(client):
+    make_labels(client)
+    for code, name, outcome in [("LO-0001", "Chili", "eaten"), ("LO-0002", "Soup", "tossed")]:
+        item = client.post("/api/items", json={"label_code": code, "name": name}).json
+        client.post(f"/api/items/{item['id']}/remove", json={"outcome": outcome})
+    client.post("/api/items", json={"label_code": "LO-0001", "name": "Rice"})
+
+    items = {i["name"]: i for i in client.get("/api/items?active=0").json}
+    assert items["Chili"]["outcome"] == "eaten" and items["Chili"]["removed_at"]
+    assert items["Soup"]["outcome"] == "tossed" and items["Soup"]["removed_at"]
+    assert items["Rice"]["removed_at"] is None
+
+    assert 'id="view-history"' in client.get("/").get_data(as_text=True)
+
+
 def test_unknown_label(client):
     assert client.get("/api/labels/LO-9999").status_code == 404
     assert client.post("/api/items", json={"label_code": "LO-9999", "name": "X"}).status_code == 404

@@ -16,7 +16,10 @@
     <section id="view-list">
       <header class="row">
         <h1>In the fridge</h1>
-        <a href="#" data-go="print" class="link">Labels</a>
+        <span class="row">
+          <a href="#" data-go="history" class="link">History</a>
+          <a href="#" data-go="print" class="link">Labels</a>
+        </span>
       </header>
       <ul id="items" class="items"></ul>
       <p id="empty" class="muted" hidden>Nothing in the fridge. Scan a label to add something.</p>
@@ -24,6 +27,13 @@
         <button class="big" data-go="scan" data-mode="check">Check label</button>
         <button class="primary big" data-go="scan">Scan label</button>
       </div>
+    </section>
+
+    <!-- History of removed items -->
+    <section id="view-history" hidden>
+      <header class="row"><h1>History</h1><a href="#" data-go="list" class="link">Back</a></header>
+      <ul id="history-items" class="items"></ul>
+      <p id="history-empty" class="muted" hidden>Nothing here yet. Items show up once they're marked eaten or tossed.</p>
     </section>
 
     <!-- Scanner -->

@@ -96,6 +96,10 @@ button.big { width: 100%; padding: 16px; margin-top: 12px; }
 .item .age { text-align: right; }
 .item.old .age { color: var(--old); font-weight: 600; }
 .item .code { color: var(--muted); grid-column: 1 / -1; }
+.item.removed { cursor: default; }
+.item.tossed { border-left-color: var(--danger); }
+.item .outcome { text-align: right; }
+.item.tossed .outcome { color: var(--danger); font-weight: 600; }
 
 #reader { border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
 

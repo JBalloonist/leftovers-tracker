@@ -1,5 +1,5 @@
 const $ = (sel) => document.querySelector(sel);
-const views = ["list", "scan", "add", "detail", "check", "print"];
+const views = ["list", "history", "scan", "add", "detail", "check", "print"];
 let scanner = null;
 let scanMode = "store"; // "store" can add or remove items; "check" only shows what's in a label
 let currentCode = null;
@@ -54,6 +54,7 @@ async function show(view) {
   }
   views.forEach((v) => ($(`#view-${v}`).hidden = v !== view));
   if (view === "list") loadList();
+  if (view === "history") loadHistory();
   if (view === "scan") {
     $("#scan-title").textContent = scanMode === "check" ? "Check label" : "Scan";
     startScanner();
@@ -74,6 +75,24 @@ async function loadList() {
     li.querySelector(".age").textContent = ageText(it.stored_at);
     li.querySelector(".code").textContent = it.label_code;
     li.onclick = () => openLabel(it.label_code);
+    ul.appendChild(li);
+  }
+}
+
+async function loadHistory() {
+  const items = (await api("/api/items?active=0"))
+    .filter((it) => it.removed_at)
+    .sort((a, b) => b.removed_at.localeCompare(a.removed_at));
+  const ul = $("#history-items");
+  ul.innerHTML = "";
+  $("#history-empty").hidden = items.length > 0;
+  for (const it of items) {
+    const li = document.createElement("li");
+    li.className = `item removed ${it.outcome}`;
+    li.innerHTML = `<span class="name"></span><span class="outcome"></span><span class="code small"></span>`;
+    li.querySelector(".name").textContent = it.name;
+    li.querySelector(".outcome").textContent = it.outcome === "eaten" ? "Eaten" : "Tossed";
+    li.querySelector(".code").textContent = `${formatWhen(it.removed_at)} · ${it.label_code}`;
     ul.appendChild(li);
   }
 }
