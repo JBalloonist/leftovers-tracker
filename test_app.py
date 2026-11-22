@@ -99,3 +99,29 @@ def test_label_link_redirects(client):
     res = client.get("/l/lo-0005")
     assert res.status_code == 302
     assert res.location.endswith("/?label=LO-0005")
+
+
+def test_backdated_item_and_date_edit(client):
+    from datetime import datetime, timedelta, timezone
+    make_labels(client)
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).replace(microsecond=0)
+
+    res = client.post("/api/items", json={"label_code": "LO-0001", "name": "Chili",
+                                          "stored_at": yesterday.isoformat()})
+    assert res.status_code == 201
+    item = res.json
+    assert item["stored_at"] == yesterday.isoformat()
+
+    two_days = yesterday - timedelta(days=1)
+    res = client.patch(f"/api/items/{item['id']}", json={"stored_at": two_days.isoformat()})
+    assert res.status_code == 200 and res.json["stored_at"] == two_days.isoformat()
+
+    future = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
+    for bad in [future, "2026-01-01T12:00:00", "not a date", None]:
+        assert client.patch(f"/api/items/{item['id']}", json={"stored_at": bad}).status_code == 400
+    assert client.post("/api/items", json={"label_code": "LO-0002", "name": "Soup",
+                                           "stored_at": future}).status_code == 400
+
+    client.post(f"/api/items/{item['id']}/remove", json={"outcome": "eaten"})
+    assert client.patch(f"/api/items/{item['id']}",
+                        json={"stored_at": two_days.isoformat()}).status_code == 404

@@ -60,6 +60,18 @@ def now_utc():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+def parse_stored_at(value):
+    """Parse a client-supplied ISO timestamp; return it normalized to UTC, or None if invalid."""
+    try:
+        dt = datetime.fromisoformat(str(value))
+    except ValueError:
+        return None
+    # Must carry a time zone, and allow a few minutes of clock skew for "now".
+    if dt.tzinfo is None or dt > datetime.now(timezone.utc) + timedelta(minutes=5):
+        return None
+    return dt.astimezone(timezone.utc).isoformat(timespec="seconds")
+
+
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(app.config["DB_PATH"])
@@ -162,19 +174,41 @@ def add_item():
     name = (data.get("name") or "").strip()
     if not code or not name:
         return jsonify(error="label_code and name are required"), 400
+    stored_at = now_utc()
+    if data.get("stored_at"):
+        stored_at = parse_stored_at(data["stored_at"])
+        if not stored_at:
+            return jsonify(error="stored_at must be a past ISO timestamp with a time zone"), 400
     db = get_db()
     if not db.execute("SELECT 1 FROM labels WHERE code = ?", (code,)).fetchone():
         return jsonify(error=f"Unknown label {code}"), 404
     try:
         cur = db.execute(
             "INSERT INTO items (label_code, name, stored_at) VALUES (?, ?, ?)",
-            (code, name, now_utc()),
+            (code, name, stored_at),
         )
         db.commit()
     except sqlite3.IntegrityError:
         return jsonify(error=f"Label {code} is already in use"), 409
     row = db.execute("SELECT * FROM items WHERE id = ?", (cur.lastrowid,)).fetchone()
     return jsonify(item_dict(row)), 201
+
+
+@app.patch("/api/items/<int:item_id>")
+@login_required
+def update_item(item_id):
+    """Change when an item in the fridge was made (e.g. it was stored a day after cooking)."""
+    stored_at = parse_stored_at((request.get_json(silent=True) or {}).get("stored_at"))
+    if not stored_at:
+        return jsonify(error="stored_at must be a past ISO timestamp with a time zone"), 400
+    db = get_db()
+    cur = db.execute(
+        "UPDATE items SET stored_at = ? WHERE id = ? AND removed_at IS NULL", (stored_at, item_id)
+    )
+    db.commit()
+    if cur.rowcount == 0:
+        return jsonify(error="Item not found or already removed"), 404
+    return jsonify(item_dict(db.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()))
 
 
 @app.post("/api/items/<int:item_id>/remove")

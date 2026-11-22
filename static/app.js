@@ -47,6 +47,29 @@ function formatWhen(iso) {
   });
 }
 
+// "YYYY-MM-DD" for a date in the phone's time zone (what <input type="date"> uses).
+function dateValue(d) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Turn a picked date into an ISO timestamp, keeping the time of day from `timeFrom`
+// and never landing in the future.
+function pickedTimestamp(value, timeFrom = new Date()) {
+  const [y, m, d] = value.split("-").map(Number);
+  const t = new Date(y, m - 1, d, timeFrom.getHours(), timeFrom.getMinutes(), timeFrom.getSeconds());
+  return new Date(Math.min(t, Date.now())).toISOString();
+}
+
+function setDateInput(input, iso) {
+  input.max = dateValue(new Date());
+  input.value = dateValue(iso ? new Date(iso) : new Date());
+}
+
+function detailWhenText(item) {
+  return `Stored ${formatWhen(item.stored_at)} (${ageText(item.stored_at)})`;
+}
+
 async function show(view) {
   if (scanner && view !== "scan") {
     await scanner.stop().catch(() => {});
@@ -115,10 +138,12 @@ async function openLabel(raw, mode = "store") {
       show("check");
     } else if (item) {
       $("#detail-name").textContent = item.name;
-      $("#detail-when").textContent = `Stored ${formatWhen(item.stored_at)} (${ageText(item.stored_at)})`;
+      $("#detail-when").textContent = detailWhenText(item);
+      setDateInput($("#detail-made-on"), item.stored_at);
       show("detail");
     } else {
       $("#name").value = "";
+      setDateInput($("#made-on"));
       show("add");
     }
   } catch (e) {
@@ -164,8 +189,12 @@ $("#add-form").onsubmit = async (e) => {
   e.preventDefault();
   const name = $("#name").value.trim();
   if (!name) { toast("Enter a name"); return; }
+  const madeOn = $("#made-on").value;
+  const body = { label_code: currentCode, name };
+  // Today means "now"; an earlier date backdates the item so its age is counted from that day.
+  if (madeOn && madeOn !== dateValue(new Date())) body.stored_at = pickedTimestamp(madeOn);
   try {
-    await api("/api/items", { method: "POST", body: { label_code: currentCode, name } });
+    await api("/api/items", { method: "POST", body });
     toast(`Saved ${name}`);
     show("list");
   } catch (err) { toast(err.message); }
@@ -180,6 +209,22 @@ document.querySelectorAll("[data-outcome]").forEach((btn) => {
     } catch (err) { toast(err.message); }
   };
 });
+
+$("#detail-made-on").onchange = async (e) => {
+  const value = e.target.value;
+  if (!value || value === dateValue(new Date(currentItem.stored_at))) return;
+  try {
+    currentItem = await api(`/api/items/${currentItem.id}`, {
+      method: "PATCH",
+      body: { stored_at: pickedTimestamp(value, new Date(currentItem.stored_at)) },
+    });
+    $("#detail-when").textContent = detailWhenText(currentItem);
+    toast("Date updated");
+  } catch (err) {
+    toast(err.message);
+    setDateInput(e.target, currentItem.stored_at);
+  }
+};
 
 $("#manual").onsubmit = (e) => { e.preventDefault(); openLabel($("#manual-code").value, scanMode); };
 
